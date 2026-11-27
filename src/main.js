@@ -44,10 +44,13 @@ store.set('user', user)
 const doc = new Y.Doc()
 new IndexeddbPersistence(`note-${noteId}`, doc)
 let online = false
+// The on/off choice is per device. While off, nothing is sent or received.
+let syncOn = store.get('sync', true) !== false
 const provider = new HocuspocusProvider({
   url: `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/sync`,
   name: noteId,
   document: doc,
+  autoConnect: syncOn,
   onStatus: ({ status }) => { online = status === 'connected'; showStatus() },
   onSynced: () => showStatus(),
   onUnsyncedChanges: () => showStatus(),
@@ -63,16 +66,16 @@ let slow = false
 function showStatus() {
   const el = $('status')
   if (!el || typeof provider === 'undefined') return
-  if (!online || !provider.hasUnsyncedChanges) {
+  if (!syncOn || !online || !provider.hasUnsyncedChanges) {
     clearTimeout(slowTimer)
     slowTimer = undefined
     slow = false
   } else if (!slowTimer) {
     slowTimer = setTimeout(() => { slow = true; showStatus() }, SLOW_SYNC_MS)
   }
-  const state = !online ? 'offline' : slow ? 'saving' : 'live'
+  const state = !syncOn ? 'off' : !online ? 'offline' : slow ? 'saving' : 'live'
   if (el.dataset.state === state) return
-  el.textContent = { offline: 'Offline · edits kept on this device', saving: 'Syncing…', live: 'Live · synced' }[state]
+  el.textContent = { off: 'Sync off · edits kept on this device', offline: 'Offline · edits kept on this device', saving: 'Syncing…', live: 'Live · synced' }[state]
   el.dataset.state = state
 }
 
@@ -86,6 +89,26 @@ function showPeople(states) {
     return dot
   }))
 }
+
+// ---------- Sync on / off ----------
+function showToggle() {
+  $('sync').textContent = syncOn ? 'Sync: On' : 'Sync: Off'
+  $('sync').setAttribute('aria-pressed', String(syncOn))
+}
+$('sync').onclick = () => {
+  syncOn = !syncOn
+  store.set('sync', syncOn)
+  const socket = provider.configuration.websocketProvider
+  if (syncOn) {
+    socket.shouldConnect = true // also covers switching back on before the old connection has closed
+    socket.connect()
+  } else {
+    socket.disconnect()
+  }
+  showToggle()
+  showStatus()
+}
+showToggle()
 
 // ---------- Editor ----------
 const editor = new Editor({
@@ -266,6 +289,7 @@ $('share').onclick = async () => {
       ? 'Phones on the same Wi-Fi can scan this. To invite people elsewhere, put the app online.'
       : 'This link only works on this computer.'
   }
+  if (!syncOn) hint = `Sync is off, so others won't get your latest edits until you turn it on. ${hint}`
   const url = `${base}/#${noteId}`
   $('link').value = url
   $('qr').src = `/api/qr?text=${encodeURIComponent(url)}`

@@ -12,6 +12,12 @@ npm start
 Open http://localhost:3000, tap **Share**, and scan the QR code with a phone on the same Wi-Fi.
 `npm test` (with the server running) checks sync, offline merge, reload and upload rules.
 
+## Sync on / off
+
+The **Sync** button turns live updates on or off for your device. While off, nothing is sent or
+received and edits stay in the browser. Turning it on merges both sides. File uploads still go to
+the server immediately, but the note linking to them is shared only once sync is on.
+
 ## Tech stack
 
 | Layer | Choice | Why |
