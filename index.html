@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#3b5bdb" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icon.svg" />
+  <title>Collab Notepad</title>
+</head>
+<body>
+  <header>
+    <div class="row">
+      <input id="title" placeholder="Untitled note" aria-label="Note title" maxlength="120" />
+      <button id="share" class="primary">Share</button>
+    </div>
+    <div class="row meta">
+      <span id="status">Connecting…</span>
+      <div id="people" aria-label="People here"></div>
+      <button id="me" title="Change your name"></button>
+      <select id="menu" aria-label="Note menu">
+        <option value="">Menu</option>
+        <option value="new">New note</option>
+        <option value="recent">My recent notes</option>
+        <option value="import">Import text / HTML file</option>
+        <option value="txt">Download as .txt</option>
+        <option value="html">Download as .html</option>
+        <option value="print">Print / save as PDF</option>
+      </select>
+    </div>
+    <div id="toolbar" role="toolbar" aria-label="Formatting"></div>
+  </header>
+  <main><div id="editor"></div></main>
+  <footer id="count"></footer>
+
+  <input type="file" id="image-input" accept="image/*" hidden />
+  <input type="file" id="file-input" hidden />
+  <input type="file" id="import-input" accept=".txt,.md,.html,.htm,text/plain,text/html" hidden />
+
+  <dialog id="share-dialog">
+    <h2>Invite people</h2>
+    <p>Anyone with this link can read and edit this note.</p>
+    <input id="link" readonly aria-label="Note link" />
+    <img id="qr" alt="QR code for the note link" />
+    <p id="share-hint"></p>
+    <div class="row end">
+      <button id="copy">Copy link</button>
+      <button id="native" hidden>Send via…</button>
+      <button id="close-share">Done</button>
+    </div>
+  </dialog>
+  <dialog id="recent-dialog">
+    <h2>Recent notes</h2>
+    <ul id="recent"></ul>
+    <div class="row end"><button id="close-recent">Close</button></div>
+  </dialog>
+  <dialog id="ask-dialog">
+    <form method="dialog">
+      <label id="ask-label" for="ask-input"></label>
+      <input id="ask-input" autocomplete="off" autocapitalize="off" />
+      <div class="row end">
+        <!-- OK comes first so the Enter key confirms; CSS shows it on the right. -->
+        <button value="ok" class="primary">OK</button>
+        <button value="cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="toast" role="status" hidden></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
